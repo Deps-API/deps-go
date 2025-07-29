@@ -14,7 +14,7 @@ The `deps-go` package is a lightweight and powerful client for interacting with 
 ## Installation
 
 ```sh
-go get github.com/Deps-API/deps-go@v1.0.0
+go get go.depscian.tech@v1.0.1
 ```
 
 ## `Client` API

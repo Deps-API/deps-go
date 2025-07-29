@@ -1,4 +1,4 @@
-module deps-go
+module go.depscian.tech
 
 go 1.24.5
 
