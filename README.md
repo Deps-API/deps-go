@@ -6,7 +6,7 @@ The `deps-go` package is a lightweight and powerful client for interacting with 
 
 ## Features
 
-- **Idiomatic Go**: Clean, generated Go code that feels natural to use.
+- **Idiomatic Go**: Clean, facade-based Go code that feels natural to use.
 - **Typed**: Fully typed with Go structs for a better developer experience.
 - **Lightweight**: Minimal dependencies.
 - **Flexible**: Configure the HTTP client, timeout, and base URL with functional options.
@@ -14,7 +14,7 @@ The `deps-go` package is a lightweight and powerful client for interacting with 
 ## Installation
 
 ```sh
-go get go.depscian.tech@v1.0.1
+go get go.depscian.tech@v1.1.0
 ```
 
 ## `Client` API
@@ -31,7 +31,7 @@ import (
 	"fmt"
 	"log"
 
-	depsclient "deps-go"
+	depsclient "go.depscian.tech"
 )
 
 func main() {
@@ -45,7 +45,7 @@ func main() {
 		log.Fatalf("Failed to get status: %v", err)
 	}
 
-	fmt.Printf("API Status: %+v\n", status)
+	fmt.Printf("Arizona Servers: %d\n", len(status.Arizona))
 }
 ```
 
@@ -75,48 +75,22 @@ The client provides access to the API through a set of services:
 - `client.Sobes`
 - `client.Status`
 
-**Example**: Get the online players on a server.
-
-```go
-package main
-
-import (
-	"context"
-	"fmt"
-	"log"
-
-	depsclient "deps-go"
-)
-
-func main() {
-	client, err := depsclient.NewClient("YOUR_API_KEY")
-	if err != nil {
-		log.Fatalf("Failed to create client: %v", err)
-	}
-
-	var serverId int = 1
-	online, err := client.Online.Get(context.Background(), serverId)
-	if err != nil {
-		log.Fatalf("Failed to get online list: %v", err)
-	}
-
-	fmt.Printf("Online Players: %+v\n", online)
-}
-```
-
 ### Error Handling
 
-All API methods return a standard Go `error` as the second return value. You can check for `nil` to determine if the request was successful.
+The client returns a standard Go `error`. For API calls that can result in a "not found" state (like finding a player), the client returns a specific `depsclient.ErrNotFound` error. You can use `errors.Is` to check for this case.
+
+**Example**: Find a player and handle the `ErrNotFound` case.
 
 ```go
 package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 
-	depsclient "deps-go"
+	depsclient "go.depscian.tech"
 )
 
 func main() {
@@ -129,16 +103,17 @@ func main() {
 	var nickname string = "NonExistentPlayer"
 	player, err := client.Player.Find(context.Background(), serverId, nickname)
 	if err != nil {
-		// The generated client returns a generic error.
-		// You can inspect the response body for more details.
-		log.Printf("API Error: %v", err)
-		if player != nil && player.Body != nil {
-			log.Printf("Error Body: %s", string(player.Body))
+		if errors.Is(err, depsclient.ErrNotFound) {
+			fmt.Println("Player not found.")
+		} else {
+			// Handle other errors (network, server-side, etc.)
+			log.Fatalf("API Error: %v", err)
 		}
 		return
 	}
 
-	fmt.Printf("Player: %+v\n", player)
+	// The 'player' variable is a clean struct, not a response wrapper.
+	fmt.Printf("Player ID: %d\n", player.Id)
 }
 ```
 
