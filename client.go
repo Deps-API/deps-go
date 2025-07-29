@@ -1,4 +1,4 @@
-package depscian_client
+package depsclient
 
 import (
 	"context"

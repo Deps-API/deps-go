@@ -31,11 +31,11 @@ import (
 	"fmt"
 	"log"
 
-	depscian "deps-go"
+	depsclient "deps-go"
 )
 
 func main() {
-	client, err := depscian.NewClient("YOUR_API_KEY")
+	client, err := depsclient.NewClient("YOUR_API_KEY")
 	if err != nil {
 		log.Fatalf("Failed to create client: %v", err)
 	}
@@ -85,11 +85,11 @@ import (
 	"fmt"
 	"log"
 
-	depscian "deps-go"
+	depsclient "deps-go"
 )
 
 func main() {
-	client, err := depscian.NewClient("YOUR_API_KEY")
+	client, err := depsclient.NewClient("YOUR_API_KEY")
 	if err != nil {
 		log.Fatalf("Failed to create client: %v", err)
 	}
@@ -116,11 +116,11 @@ import (
 	"fmt"
 	"log"
 
-	depscian "deps-go"
+	depsclient "deps-go"
 )
 
 func main() {
-	client, err := depscian.NewClient("YOUR_API_KEY")
+	client, err := depsclient.NewClient("YOUR_API_KEY")
 	if err != nil {
 		log.Fatalf("Failed to create client: %v", err)
 	}
