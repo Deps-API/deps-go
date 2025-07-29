@@ -13,13 +13,14 @@ import (
 var ErrNotFound = errors.New("not found")
 
 const (
-	defaultBaseURL = "https://api.depscian.tech/v2"
+	defaultBaseURL = "https://api.depscian.tech"
 	apiKeyHeader   = "X-API-Key"
 )
 
 func unpackResponse[T any](
 	responseBody *T,
 	httpResponse *http.Response,
+	body []byte,
 	err error,
 ) (*T, error) {
 	if err != nil {
@@ -27,15 +28,15 @@ func unpackResponse[T any](
 	}
 
 	if httpResponse.StatusCode == http.StatusNotFound {
-		return nil, ErrNotFound
+		return nil, fmt.Errorf("%w: %s", ErrNotFound, string(body))
 	}
 
 	if httpResponse.StatusCode < 200 || httpResponse.StatusCode >= 300 {
-		return nil, fmt.Errorf("api error: status %s", httpResponse.Status)
+		return nil, fmt.Errorf("api error: status %s, body: %s", httpResponse.Status, string(body))
 	}
 
 	if responseBody == nil {
-		return nil, ErrNotFound
+		return nil, fmt.Errorf("%w: %s", ErrNotFound, string(body))
 	}
 
 	return responseBody, nil
@@ -77,6 +78,7 @@ func NewClient(apiKey string, opts ...Option) (*Client, error) {
 
 	authInterceptor := func(ctx context.Context, req *http.Request) error {
 		req.Header.Set(apiKeyHeader, apiKey)
+		req.Header.Set("Accept", "application/json")
 		return nil
 	}
 
@@ -134,7 +136,7 @@ func (s *AdminsService) Get(ctx context.Context, serverID int) (*apiclient.Admin
 	if err != nil {
 		return nil, err
 	}
-	return unpackResponse(resp.JSON200, resp.HTTPResponse, err)
+	return unpackResponse(resp.JSON200, resp.HTTPResponse, resp.Body, err)
 }
 
 type FamiliesService service
@@ -145,7 +147,7 @@ func (s *FamiliesService) List(ctx context.Context, serverID int) (*apiclient.Fa
 	if err != nil {
 		return nil, err
 	}
-	return unpackResponse(resp.JSON200, resp.HTTPResponse, err)
+	return unpackResponse(resp.JSON200, resp.HTTPResponse, resp.Body, err)
 }
 
 func (s *FamiliesService) Get(ctx context.Context, serverID, famID int) (*apiclient.FamilyResponse, error) {
@@ -154,7 +156,7 @@ func (s *FamiliesService) Get(ctx context.Context, serverID, famID int) (*apicli
 	if err != nil {
 		return nil, err
 	}
-	return unpackResponse(resp.JSON200, resp.HTTPResponse, err)
+	return unpackResponse(resp.JSON200, resp.HTTPResponse, resp.Body, err)
 }
 
 type FractionsService service
@@ -165,7 +167,7 @@ func (s *FractionsService) List(ctx context.Context, serverID int) (*apiclient.F
 	if err != nil {
 		return nil, err
 	}
-	return unpackResponse(resp.JSON200, resp.HTTPResponse, err)
+	return unpackResponse(resp.JSON200, resp.HTTPResponse, resp.Body, err)
 }
 
 func (s *FractionsService) GetMembers(ctx context.Context, serverID int, fractionID string) (*apiclient.FractionResponse, error) {
@@ -174,7 +176,7 @@ func (s *FractionsService) GetMembers(ctx context.Context, serverID int, fractio
 	if err != nil {
 		return nil, err
 	}
-	return unpackResponse(resp.JSON200, resp.HTTPResponse, err)
+	return unpackResponse(resp.JSON200, resp.HTTPResponse, resp.Body, err)
 }
 
 type GhettoService service
@@ -185,7 +187,7 @@ func (s *GhettoService) Get(ctx context.Context, serverID int) (*apiclient.Ghett
 	if err != nil {
 		return nil, err
 	}
-	return unpackResponse(resp.JSON200, resp.HTTPResponse, err)
+	return unpackResponse(resp.JSON200, resp.HTTPResponse, resp.Body, err)
 }
 
 type LeadershipService service
@@ -196,7 +198,7 @@ func (s *LeadershipService) GetLeaders(ctx context.Context, serverID int) (*apic
 	if err != nil {
 		return nil, err
 	}
-	return unpackResponse(resp.JSON200, resp.HTTPResponse, err)
+	return unpackResponse(resp.JSON200, resp.HTTPResponse, resp.Body, err)
 }
 
 func (s *LeadershipService) GetSubleaders(ctx context.Context, serverID int) (*apiclient.SubleadersResponse, error) {
@@ -205,7 +207,7 @@ func (s *LeadershipService) GetSubleaders(ctx context.Context, serverID int) (*a
 	if err != nil {
 		return nil, err
 	}
-	return unpackResponse(resp.JSON200, resp.HTTPResponse, err)
+	return unpackResponse(resp.JSON200, resp.HTTPResponse, resp.Body, err)
 }
 
 type MapService service
@@ -216,7 +218,7 @@ func (s *MapService) Get(ctx context.Context, serverID int) (*apiclient.MapRespo
 	if err != nil {
 		return nil, err
 	}
-	return unpackResponse(resp.JSON200, resp.HTTPResponse, err)
+	return unpackResponse(resp.JSON200, resp.HTTPResponse, resp.Body, err)
 }
 
 type OnlineService service
@@ -227,7 +229,7 @@ func (s *OnlineService) Get(ctx context.Context, serverID int) (*apiclient.Onlin
 	if err != nil {
 		return nil, err
 	}
-	return unpackResponse(resp.JSON200, resp.HTTPResponse, err)
+	return unpackResponse(resp.JSON200, resp.HTTPResponse, resp.Body, err)
 }
 
 type PlayerService service
@@ -238,7 +240,7 @@ func (s *PlayerService) Find(ctx context.Context, serverID int, nickname string)
 	if err != nil {
 		return nil, err
 	}
-	return unpackResponse(resp.JSON200, resp.HTTPResponse, err)
+	return unpackResponse(resp.JSON200, resp.HTTPResponse, resp.Body, err)
 }
 
 type SobesService service
@@ -249,7 +251,7 @@ func (s *SobesService) Get(ctx context.Context, serverID int) (*apiclient.SobesR
 	if err != nil {
 		return nil, err
 	}
-	return unpackResponse(resp.JSON200, resp.HTTPResponse, err)
+	return unpackResponse(resp.JSON200, resp.HTTPResponse, resp.Body, err)
 }
 
 type StatusService service
@@ -259,5 +261,5 @@ func (s *StatusService) Get(ctx context.Context) (*apiclient.StatusResponse, err
 	if err != nil {
 		return nil, err
 	}
-	return unpackResponse(resp.JSON200, resp.HTTPResponse, err)
+	return unpackResponse(resp.JSON200, resp.HTTPResponse, resp.Body, err)
 }
