@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"time"
 
-	apiclient "deps-go/internal/client"
+	apiclient "go.depscian.tech/internal/client"
 )
 
 const (
